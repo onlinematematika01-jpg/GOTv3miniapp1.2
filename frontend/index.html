@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GOTv3 — Westeros Xaritasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cinzel+Decorative:wght@700&family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8c96d;
+  --gold-dark: #8b6914;
+  --parchment: #f4e9c8;
+  --parchment-dark: #e8d5a0;
+  --ink: #1a120b;
+  --ink-light: #3d2b1f;
+  --blood: #8b0000;
+  --blood-light: #cc2200;
+  --steel: #4a5568;
+  --steel-light: #718096;
+  --bg-dark: #0d0a06;
+  --bg-mid: #1a1409;
+  --panel-bg: rgba(20, 15, 8, 0.95);
+  --panel-border: rgba(201, 168, 76, 0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-dark);
+  color: var(--parchment);
+  font-family: 'IM Fell English SC', serif;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════ HEADER ══════════════ */
+header {
+  background: linear-gradient(180deg, #0a0702 0%, #1a1009 100%);
+  border-bottom: 2px solid var(--gold-dark);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+
+header::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.logo {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 18px;
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(201,168,76,0.5);
+  letter-spacing: 2px;
+}
+
+.logo span { color: var(--blood-light); }
+
+.header-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--gold-dark);
+  font-family: 'Cinzel', serif;
+}
+
+.header-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-icon { font-size: 14px; }
+
+/* ══════════════ MAIN LAYOUT ══════════════ */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ══════════════ MAP AREA ══════════════ */
+.map-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.map-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  touch-action: none;
+}
+
+#westeros-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ══════════════ WESTEROS SVG MAP ══════════════ */
+.region-zone {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.region-zone:hover .region-fill {
+  filter: brightness(1.3);
+}
+
+.region-fill {
+  transition: all 0.3s;
+}
+
+.region-fill.at-war {
+  animation: warPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes warPulse {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 0 rgba(139,0,0,0)); }
+  50% { filter: brightness(1.4) drop-shadow(0 0 8px rgba(200,34,0,0.8)); }
+}
+
+.region-fill.occupied {
+  fill: #5a1a1a !important;
+}
+
+/* House marker */
+.house-marker {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.house-marker:hover {
+  transform: scale(1.15);
+}
+
+.house-shield {
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.8));
+}
+
+.house-name-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  fill: var(--parchment);
+  text-anchor: middle;
+  pointer-events: none;
+  text-shadow: 0 1px 3px black;
+}
+
+/* War arrows */
+.war-arrow {
+  animation: warFlicker 2s ease-in-out infinite;
+}
+
+@keyframes warFlicker {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.4; }
+}
+
+/* Alliance lines */
+.alliance-line {
+  stroke-dasharray: 6 3;
+  animation: dashMove 3s linear infinite;
+}
+
+@keyframes dashMove {
+  to { stroke-dashoffset: -18; }
+}
+
+/* ══════════════ SIDE PANEL ══════════════ */
+.side-panel {
+  width: 0;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-border);
+  overflow: hidden;
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.side-panel.open {
+  width: 300px;
+}
+
+.panel-inner {
+  width: 300px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+}
+
+.panel-inner::-webkit-scrollbar { width: 4px; }
+.panel-inner::-webkit-scrollbar-track { background: transparent; }
+.panel-inner::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
+
+.close-panel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: 1px solid var(--gold-dark);
+  color: var(--gold);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-panel:hover { background: var(--gold-dark); }
+
+.house-title {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  color: var(--gold);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.house-region {
+  font-size: 12px;
+  color: var(--steel-light);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.region-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+  margin: 12px 0;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.stat-label {
+  color: var(--steel-light);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-value {
+  color: var(--parchment);
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+}
+
+.stat-value.gold { color: var(--gold); }
+.stat-value.blood { color: var(--blood-light); }
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: var(--gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 14px 0 8px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+  font-size: 12px;
+}
+
+.role-badge {
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(201,168,76,0.15);
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.3);
+  white-space: nowrap;
+}
+
+.role-badge.lord { background: rgba(139,0,0,0.2); color: #e57373; border-color: rgba(139,0,0,0.4); }
+.role-badge.high_lord { background: rgba(100,0,0,0.3); color: var(--gold-light); border-color: var(--gold-dark); }
+.role-badge.knight { background: rgba(70,130,180,0.15); color: #90caf9; border-color: rgba(70,130,180,0.3); }
+
+.war-item {
+  background: rgba(139,0,0,0.1);
+  border: 1px solid rgba(139,0,0,0.3);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.war-item .war-vs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+
+.war-status-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: white;
+}
+
+.war-status-badge.declared { background: #b7791f; }
+.war-status-badge.grace_period { background: #6b46c1; }
+.war-status-badge.fighting { background: var(--blood); animation: warPulse 1.5s infinite; }
+.war-status-badge.ended { background: #2d3748; }
+
+/* ══════════════ BOTTOM TABS ══════════════ */
+.bottom-nav {
+  background: #0a0702;
+  border-top: 1px solid var(--gold-dark);
+  display: flex;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--steel-light);
+  padding: 10px 4px 8px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s;
+  border-top: 2px solid transparent;
+}
+
+.tab-btn.active {
+  color: var(--gold);
+  border-top-color: var(--gold);
+}
+
+.tab-icon { font-size: 18px; line-height: 1; }
+
+/* ══════════════ LEADERBOARD OVERLAY ══════════════ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+}
+
+.overlay.show { display: flex; }
+
+.overlay-sheet {
+  background: linear-gradient(180deg, #1a1009 0%, #0d0a06 100%);
+  border-top: 2px solid var(--gold-dark);
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 20px 16px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.overlay-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 16px;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 16px;
+  text-shadow: 0 0 15px rgba(201,168,76,0.4);
+}
+
+.lb-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+}
+
+.lb-rank {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  width: 30px;
+  text-align: center;
+  color: var(--steel-light);
+}
+
+.lb-rank.r1 { color: #ffd700; }
+.lb-rank.r2 { color: #c0c0c0; }
+.lb-rank.r3 { color: #cd7f32; }
+
+.lb-info { flex: 1; }
+.lb-name { font-family: 'Cinzel', serif; font-size: 13px; color: var(--parchment); }
+.lb-region { font-size: 10px; color: var(--steel-light); }
+
+.lb-power {
+  text-align: right;
+}
+
+.lb-power-val {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  color: var(--gold);
+}
+
+.lb-power-label { font-size: 10px; color: var(--steel-light); }
+
+/* ══════════════ CHRONICLE OVERLAY ══════════════ */
+.chronicle-item {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.1);
+}
+
+.chronicle-type {
+  font-size: 10px;
+  color: var(--gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.chronicle-text {
+  font-size: 12px;
+  color: var(--parchment);
+  line-height: 1.5;
+  font-family: 'IM Fell English SC', serif;
+}
+
+.chronicle-date {
+  font-size: 10px;
+  color: var(--steel);
+  margin-top: 3px;
+}
+
+/* ══════════════ TOOLTIP ══════════════ */
+.map-tooltip {
+  position: absolute;
+  background: var(--panel-bg);
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  padding: 8px 12px;
+  pointer-events: none;
+  font-size: 12px;
+  z-index: 50;
+  min-width: 140px;
+  backdrop-filter: blur(10px);
+  transition: opacity 0.15s;
+  opacity: 0;
+}
+
+.map-tooltip.visible { opacity: 1; }
+
+.tooltip-name {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+/* Loading */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.loading-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 24px;
+  color: var(--gold);
+  text-shadow: 0 0 30px rgba(201,168,76,0.6);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  50% { text-shadow: 0 0 40px rgba(201,168,76,0.9); }
+}
+
+.loading-sub {
+  font-size: 12px;
+  color: var(--steel-light);
+  letter-spacing: 3px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error */
+.error-msg {
+  background: rgba(139,0,0,0.2);
+  border: 1px solid var(--blood);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #ff8a80;
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* Occupation badge */
+.occupation-badge {
+  display: inline-block;
+  background: rgba(139,0,0,0.3);
+  border: 1px solid var(--blood);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: #ff8a80;
+  margin-bottom: 8px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .side-panel.open { width: 260px; }
+  .panel-inner { width: 260px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-title">GOTv3</div>
+  <div class="spinner"></div>
+  <div class="loading-sub">WESTEROS YUKLANMOQDA...</div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="logo">GOT<span>v3</span></div>
+  <div class="header-stats" id="headerStats">
+    <div class="header-stat"><span class="stat-icon">👥</span> <span id="hStatPlayers">—</span></div>
+    <div class="header-stat"><span class="stat-icon">🏰</span> <span id="hStatHouses">—</span></div>
+    <div class="header-stat"><span class="stat-icon">⚔️</span> <span id="hStatWars">—</span></div>
+  </div>
+</header>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Map -->
+  <div class="map-container">
+    <div class="map-wrapper" id="mapWrapper">
+      <svg id="westeros-map" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Sea texture -->
+          <pattern id="seaPattern" patternUnits="userSpaceOnUse" width="8" height="8">
+            <rect width="8" height="8" fill="#0a1628"/>
+            <path d="M0 4 Q2 2 4 4 Q6 6 8 4" stroke="#0d1f3c" stroke-width="0.4" fill="none"/>
+          </pattern>
+
+          <!-- Land texture -->
+          <filter id="landTexture">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
+            <feColorMatrix type="saturate" values="0" in="noise" result="gray"/>
+            <feBlend in="SourceGraphic" in2="gray" mode="multiply" result="blend"/>
+            <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+          </filter>
+
+          <filter id="glowRed">
+            <feGaussianBlur stdDeviation="1.5" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+
+          <filter id="shadow">
+            <feDropShadow dx="0" dy="1" stdDeviation="1" flood-opacity="0.5"/>
+          </filter>
+
+          <!-- Gradient for sea -->
+          <radialGradient id="seaGrad" cx="50%" cy="50%" r="70%">
+            <stop offset="0%" stop-color="#0d1f3c"/>
+            <stop offset="100%" stop-color="#060d18"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Sea background -->
+        <rect width="100" height="100" fill="url(#seaGrad)"/>
+
+        <!-- Subtle wave lines -->
+        <g stroke="#1a3050" stroke-width="0.2" opacity="0.4">
+          <path d="M0 20 Q25 18 50 20 Q75 22 100 20"/>
+          <path d="M0 40 Q25 38 50 40 Q75 42 100 40"/>
+          <path d="M0 60 Q25 58 50 60 Q75 62 100 60"/>
+          <path d="M0 80 Q25 78 50 80 Q75 82 100 80"/>
+        </g>
+
+        <!-- ════ WESTEROS REGIONS ════ -->
+        <!-- Each region is an approximate polygon on 0-100 grid -->
+
+        <!-- THE NORTH (top, large) -->
+        <g class="region-zone" id="zone-north" data-region="Shimol">
+          <path class="region-fill" id="fill-north"
+            d="M18,2 L62,2 L66,5 L70,12 L68,22 L60,26 L54,24 L48,28 L42,26 L36,30 L28,28 L22,20 L16,14 Z"
+            fill="#2c4a6e" stroke="#1a2d45" stroke-width="0.5" opacity="0.88"/>
+          <!-- Mountains symbol -->
+          <text x="42" y="13" font-family="serif" font-size="7" fill="#7aa3cc" text-anchor="middle" opacity="0.6">⛰</text>
+        </g>
+
+        <!-- THE WALL indicator -->
+        <line x1="18" y1="28" x2="64" y2="28" stroke="#aed6f1" stroke-width="1.2" stroke-dasharray="2,1" opacity="0.7"/>
+        <text x="41" y="27" font-family="serif" font-size="4" fill="#aed6f1" text-anchor="middle" opacity="0.8">— QORADARBOZ —</text>
+
+        <!-- THE VALE (right-center) -->
+        <g class="region-zone" id="zone-vale" data-region="Vodiy">
+          <path class="region-fill" id="fill-vale"
+            d="M60,26 L72,24 L80,28 L78,40 L72,44 L64,42 L60,36 L58,30 Z"
+            fill="#2d6a4f" stroke="#1b4332" stroke-width="0.5" opacity="0.88"/>
+          <text x="70" y="36" font-family="serif" font-size="6" fill="#74c69d" text-anchor="middle" opacity="0.6">⛰</text>
+        </g>
+
+        <!-- RIVERLANDS (center) -->
+        <g class="region-zone" id="zone-riverlands" data-region="Daryo yerlari">
+          <path class="region-fill" id="fill-riverlands"
+            d="M36,30 L54,28 L60,36 L58,46 L52,50 L44,48 L38,42 L34,36 Z"
+            fill="#6e5c2e" stroke="#4a3c1e" stroke-width="0.5" opacity="0.88"/>
+          <!-- River -->
+          <path d="M44,30 Q46,36 44,42 Q42,46 44,50" stroke="#5ba4d4" stroke-width="0.6" fill="none" opacity="0.7"/>
+        </g>
+
+        <!-- IRON ISLANDS (small, left) -->
+        <g class="region-zone" id="zone-iron" data-region="Temir orollar">
+          <ellipse class="region-fill" id="fill-iron" cx="22" cy="38" rx="7" ry="4"
+            fill="#4a4a4a" stroke="#2d2d2d" stroke-width="0.5" opacity="0.88"/>
+          <ellipse class="region-fill" cx="20" cy="34" rx="3" ry="2"
+            fill="#4a4a4a" stroke="#2d2d2d" stroke-width="0.5" opacity="0.88"/>
+        </g>
+
+        <!-- WESTERLANDS (left-center) -->
+        <g class="region-zone" id="zone-westerlands" data-region="G'arbiy yerlar">
+          <path class="region-fill" id="fill-westerlands"
+            d="M22,42 L38,42 L40,50 L36,58 L26,60 L18,54 L18,46 Z"
+            fill="#7d5a00" stroke="#5a3e00" stroke-width="0.5" opacity="0.88"/>
+          <!-- Gold mine symbol -->
+          <text x="29" y="53" font-family="serif" font-size="5" fill="#f0c040" text-anchor="middle" opacity="0.7">⛏</text>
+        </g>
+
+        <!-- KING'S LANDING area (right coast, center-bottom) -->
+        <g class="region-zone" id="zone-kings" data-region="Qirollik bandargohi">
+          <path class="region-fill" id="fill-kings"
+            d="M58,46 L72,44 L76,52 L72,58 L62,58 L56,54 Z"
+            fill="#5a3472" stroke="#3b1f50" stroke-width="0.5" opacity="0.88"/>
+          <!-- Crown symbol -->
+          <text x="64" y="53" font-family="serif" font-size="5" fill="#d4a4f8" text-anchor="middle" opacity="0.8">👑</text>
+        </g>
+
+        <!-- THE REACH (bottom-center/left) -->
+        <g class="region-zone" id="zone-reach" data-region="Tyrellar vodiysi">
+          <path class="region-fill" id="fill-reach"
+            d="M26,60 L58,58 L60,68 L54,76 L42,78 L28,72 L22,64 Z"
+            fill="#2d7a3a" stroke="#1a4f24" stroke-width="0.5" opacity="0.88"/>
+          <!-- Fields -->
+          <text x="42" y="69" font-family="serif" font-size="6" fill="#90ee90" text-anchor="middle" opacity="0.5">🌾</text>
+        </g>
+
+        <!-- STORMLANDS (right bottom) -->
+        <g class="region-zone" id="zone-stormlands" data-region="Bo'ronli yerlar">
+          <path class="region-fill" id="fill-stormlands"
+            d="M62,58 L76,56 L80,64 L78,74 L68,76 L60,70 L58,62 Z"
+            fill="#1a4a6e" stroke="#0d2d45" stroke-width="0.5" opacity="0.88"/>
+          <text x="70" y="67" font-family="serif" font-size="5" fill="#90caf9" text-anchor="middle" opacity="0.7">⛈</text>
+        </g>
+
+        <!-- DORNE (far south) -->
+        <g class="region-zone" id="zone-dorne" data-region="Dorn">
+          <path class="region-fill" id="fill-dorne"
+            d="M34,78 L66,76 L70,84 L64,92 L50,94 L36,90 L30,84 Z"
+            fill="#8b3a00" stroke="#5c2500" stroke-width="0.5" opacity="0.88"/>
+          <text x="50" y="87" font-family="serif" font-size="6" fill="#ffb74d" text-anchor="middle" opacity="0.7">☀</text>
+        </g>
+
+        <!-- Region name labels (always visible) -->
+        <g id="regionLabels" font-family="'Cinzel', serif" opacity="0.55">
+          <text x="42" y="17" font-size="4.5" fill="#aed6f1" text-anchor="middle">THE NORTH</text>
+          <text x="70" y="35" font-size="3.5" fill="#74c69d" text-anchor="middle">THE VALE</text>
+          <text x="47" y="41" font-size="3.5" fill="#f9e79f" text-anchor="middle">RIVERLANDS</text>
+          <text x="22" y="39" font-size="2.8" fill="#ccc" text-anchor="middle">IRON IS.</text>
+          <text x="29" y="49" font-size="3.5" fill="#f0c040" text-anchor="middle">WESTERLANDS</text>
+          <text x="65" y="51" font-size="3.2" fill="#d4a4f8" text-anchor="middle">KING'S LANDING</text>
+          <text x="42" y="67" font-size="4" fill="#90ee90" text-anchor="middle">THE REACH</text>
+          <text x="70" y="65" font-size="3.2" fill="#90caf9" text-anchor="middle">STORMLANDS</text>
+          <text x="50" y="84" font-size="4" fill="#ffb74d" text-anchor="middle">DORNE</text>
+        </g>
+
+        <!-- Alliance lines layer (below markers) -->
+        <g id="allianceLayer"></g>
+
+        <!-- War arrows layer -->
+        <g id="warLayer"></g>
+
+        <!-- House markers layer -->
+        <g id="houseLayer"></g>
+
+        <!-- Tooltip group -->
+        <g id="tooltipGroup" opacity="0" pointer-events="none">
+          <rect id="tooltipBg" rx="1.5" ry="1.5" fill="rgba(10,7,3,0.92)" stroke="#c9a84c" stroke-width="0.4"/>
+          <text id="tooltipText" font-family="Cinzel, serif" font-size="3.5" fill="#e8c96d"/>
+          <text id="tooltipSub" font-family="serif" font-size="2.5" fill="#718096"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- HTML Tooltip -->
+    <div class="map-tooltip" id="mapTooltip">
+      <div class="tooltip-name" id="tooltipName"></div>
+      <div id="tooltipBody"></div>
+    </div>
+  </div>
+
+  <!-- Side Panel -->
+  <div class="side-panel" id="sidePanel">
+    <div class="panel-inner" id="panelInner">
+      <!-- Content injected by JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="tab-btn active" onclick="setTab('map')" id="tab-map">
+    <span class="tab-icon">🗺</span>
+    XARITA
+  </button>
+  <button class="tab-btn" onclick="setTab('leaderboard')" id="tab-leaderboard">
+    <span class="tab-icon">🏆</span>
+    REYTING
+  </button>
+  <button class="tab-btn" onclick="setTab('chronicle')" id="tab-chronicle">
+    <span class="tab-icon">📜</span>
+    TARIX
+  </button>
+  <button class="tab-btn" onclick="setTab('wars')" id="tab-wars">
+    <span class="tab-icon">⚔️</span>
+    URUSHLAR
+  </button>
+</div>
+
+<!-- Leaderboard Overlay -->
+<div class="overlay" id="leaderboardOverlay" onclick="closeOverlay('leaderboardOverlay')">
+  <div class="overlay-sheet" onclick="event.stopPropagation()">
+    <div class="overlay-title">⚔ Kuch Reytingi ⚔</div>
+    <div id="leaderboardContent"></div>
+  </div>
+</div>
+
+<!-- Chronicle Overlay -->
+<div class="overlay" id="chronicleOverlay" onclick="closeOverlay('chronicleOverlay')">
+  <div class="overlay-sheet" onclick="event.stopPropagation()">
+    <div class="overlay-title">📜 Voqealar Xronikasi</div>
+    <div id="chronicleContent"></div>
+  </div>
+</div>
+
+<!-- Wars Overlay -->
+<div class="overlay" id="warsOverlay" onclick="closeOverlay('warsOverlay')">
+  <div class="overlay-sheet" onclick="event.stopPropagation()">
+    <div class="overlay-title">⚔ Faol Urushlar</div>
+    <div id="warsContent"></div>
+  </div>
+</div>
+
+
+<script>
+// ─────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────
+// API_BASE: always use relative URLs so it works on any domain
+const API_BASE = ''; // was: window.location.hostname === 'localhost'
+
+
+
+// Region → region enum mapping for zone highlighting
+const REGION_ZONE_MAP = {
+  "Shimol": "north",
+  "Vodiy": "vale",
+  "Daryo yerlari": "riverlands",
+  "Temir orollar": "iron",
+  "G'arbiy yerlar": "westerlands",
+  "Qirollik bandargohi": "kings",
+  "Tyrellar vodiysi": "reach",
+  "Bo'ronli yerlar": "stormlands",
+  "Dorn": "dorne",
+};
+
+// Region approximate coordinates on the SVG (percentage based)
+const REGION_POSITIONS = {
+  "Shimol":              {x: 42, y: 15},
+  "Vodiy":               {x: 70, y: 35},
+  "Daryo yerlari":       {x: 47, y: 40},
+  "Temir orollar":       {x: 22, y: 37},
+  "G'arbiy yerlar":      {x: 29, y: 50},
+  "Qirollik bandargohi": {x: 65, y: 51},
+  "Tyrellar vodiysi":    {x: 42, y: 67},
+  "Bo'ronli yerlar":     {x: 70, y: 65},
+  "Dorn":                {x: 50, y: 86},
+};
+
+const ROLE_LABELS = {
+  admin: 'Admin', high_lord: 'Hukmdor', lord: 'Lord',
+  knight: 'Ritsar', member: 'A\'zo'
+};
+
+const WAR_STATUS_LABELS = {
+  declared: 'E\'lon qilindi',
+  grace_period: 'Tayyorgarlik',
+  fighting: 'JANG DAVOM ETMOQDA',
+  ended: 'Tugadi'
+};
+
+// ─────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────
+let mapData = null;
+let selectedHouseId = null;
+let activeTab = 'map';
+
+// ─────────────────────────────────────────────────
+// FETCH
+// ─────────────────────────────────────────────────
+async function fetchAPI(path) {
+  const res = await fetch(API_BASE + path);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+// ─────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────
+async function init() {
+  try {
+    mapData = await fetchAPI('/api/map');
+    renderMap();
+    updateHeaderStats();
+    document.getElementById('loadingScreen').style.display = 'none';
+
+    // Auto-refresh every 30 seconds
+    setInterval(async () => {
+      try {
+        mapData = await fetchAPI('/api/map');
+        renderMap();
+        updateHeaderStats();
+      } catch(e) { /* silent */ }
+    }, 30000);
+  } catch(err) {
+    document.getElementById('loadingScreen').innerHTML = `
+      <div style="color:#ff8a80;font-family:'Cinzel',serif;text-align:center;padding:20px">
+        <div style="font-size:40px;margin-bottom:16px">⚠</div>
+        <div style="font-size:16px;margin-bottom:8px">Backend bilan aloqa yo'q</div>
+        <div style="font-size:12px;color:#718096">${err.message}</div>
+        <div style="font-size:11px;color:#555;margin-top:12px">DATABASE_URL va API_BASE ni tekshiring</div>
+      </div>
+    `;
+  }
+}
+
+// ─────────────────────────────────────────────────
+// HEADER STATS
+// ─────────────────────────────────────────────────
+function updateHeaderStats() {
+  if (!mapData) return;
+  const s = mapData.stats;
+  document.getElementById('hStatPlayers').textContent = s.total_players;
+  document.getElementById('hStatHouses').textContent = s.total_houses;
+  document.getElementById('hStatWars').textContent = s.active_wars;
+}
+
+// ─────────────────────────────────────────────────
+// MAP RENDER
+// ─────────────────────────────────────────────────
+function renderMap() {
+  if (!mapData) return;
+  renderRegionHighlights();
+  renderAllianceLines();
+  renderWarArrows();
+  renderHouseMarkers();
+}
+
+function regionCenter(regionName) {
+  return REGION_POSITIONS[regionName] || {x: 50, y: 50};
+}
+
+// War regions → highlight fill
+function renderRegionHighlights() {
+  // Reset all
+  Object.values(REGION_ZONE_MAP).forEach(z => {
+    const el = document.getElementById(`fill-${z}`);
+    if (el) { el.classList.remove('at-war', 'occupied'); }
+  });
+
+  // Mark regions at war
+  const warRegions = new Set();
+  mapData.wars.forEach(w => {
+    // Find houses
+    const atk = mapData.houses.find(h => h.id === w.attacker_house_id);
+    const def = mapData.houses.find(h => h.id === w.defender_house_id);
+    if (atk) warRegions.add(atk.region);
+    if (def) warRegions.add(def.region);
+  });
+
+  warRegions.forEach(r => {
+    const zone = REGION_ZONE_MAP[r];
+    if (zone) {
+      const el = document.getElementById(`fill-${zone}`);
+      if (el) el.classList.add('at-war');
+    }
+  });
+
+  // Mark occupied regions
+  mapData.houses.forEach(h => {
+    if (h.is_under_occupation) {
+      const zone = REGION_ZONE_MAP[h.region];
+      if (zone) {
+        const el = document.getElementById(`fill-${zone}`);
+        if (el) el.classList.add('occupied');
+      }
+    }
+  });
+}
+
+// Alliance lines
+function renderAllianceLines() {
+  const layer = document.getElementById('allianceLayer');
+  layer.innerHTML = '';
+
+  const housePositions = {};
+  mapData.houses.forEach(h => {
+    const pos = regionCenter(h.region);
+    housePositions[h.id] = pos;
+  });
+
+  mapData.alliances.forEach(ag => {
+    const ids = ag.member_house_ids;
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const p1 = housePositions[ids[i]];
+        const p2 = housePositions[ids[j]];
+        if (!p1 || !p2) continue;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+        line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+        line.setAttribute('stroke', '#c9a84c');
+        line.setAttribute('stroke-width', '0.4');
+        line.setAttribute('opacity', '0.45');
+        line.classList.add('alliance-line');
+        layer.appendChild(line);
+      }
+    }
+  });
+}
+
+// War arrows
+function renderWarArrows() {
+  const layer = document.getElementById('warLayer');
+  layer.innerHTML = '';
+
+  const housePos = {};
+  mapData.houses.forEach(h => {
+    housePos[h.id] = regionCenter(h.region);
+  });
+
+  // Arrow marker
+  const defs = document.querySelector('defs');
+  const existingMarker = document.getElementById('warArrowMarker');
+  if (existingMarker) existingMarker.remove();
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', 'warArrowMarker');
+  marker.setAttribute('markerWidth', '4');
+  marker.setAttribute('markerHeight', '4');
+  marker.setAttribute('refX', '3');
+  marker.setAttribute('refY', '2');
+  marker.setAttribute('orient', 'auto');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', 'M0,0 L0,4 L4,2 z');
+  path.setAttribute('fill', '#cc2200');
+  marker.appendChild(path);
+  defs.appendChild(marker);
+
+  mapData.wars.forEach(w => {
+    const p1 = housePos[w.attacker_house_id];
+    const p2 = housePos[w.defender_house_id];
+    if (!p1 || !p2) return;
+
+    // Shorten the line a bit
+    const dx = p2.x - p1.x, dy = p2.y - p1.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    const ux = dx/len, uy = dy/len;
+    const x1 = p1.x + ux*3, y1 = p1.y + uy*3;
+    const x2 = p2.x - ux*3, y2 = p2.y - uy*3;
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', '#cc2200');
+    line.setAttribute('stroke-width', w.status === 'fighting' ? '0.8' : '0.5');
+    line.setAttribute('marker-end', 'url(#warArrowMarker)');
+    line.setAttribute('opacity', '0.8');
+    line.classList.add('war-arrow');
+    layer.appendChild(line);
+  });
+}
+
+// House markers
+function renderHouseMarkers() {
+  const layer = document.getElementById('houseLayer');
+  layer.innerHTML = '';
+
+  // Group houses by region
+  const byRegion = {};
+  mapData.houses.forEach(h => {
+    if (!byRegion[h.region]) byRegion[h.region] = [];
+    byRegion[h.region].push(h);
+  });
+
+  Object.entries(byRegion).forEach(([region, houses]) => {
+    const center = regionCenter(region);
+    const n = houses.length;
+
+    houses.forEach((h, i) => {
+      // Spread markers in the region
+      let x = center.x, y = center.y;
+      if (n > 1) {
+        const angle = (i / n) * Math.PI * 2 - Math.PI/2;
+        const radius = Math.min(4 + n * 0.5, 7);
+        x = center.x + Math.cos(angle) * radius;
+        y = center.y + Math.sin(angle) * radius;
+      }
+
+      // Clamp to map bounds
+      x = Math.max(4, Math.min(96, x));
+      y = Math.max(4, Math.min(96, y));
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.classList.add('house-marker');
+      g.setAttribute('data-house-id', h.id);
+      g.setAttribute('transform', `translate(${x},${y})`);
+
+      // Shield background
+      const shield = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+      shield.setAttribute('rx', '3.5');
+      shield.setAttribute('ry', '4');
+      shield.setAttribute('fill', h.region_color || '#4a5568');
+      shield.setAttribute('stroke', h.id === selectedHouseId ? '#ffd700' : '#c9a84c');
+      shield.setAttribute('stroke-width', h.id === selectedHouseId ? '0.8' : '0.4');
+      shield.classList.add('house-shield');
+      g.appendChild(shield);
+
+      // Castle icon
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      icon.setAttribute('text-anchor', 'middle');
+      icon.setAttribute('dominant-baseline', 'central');
+      icon.setAttribute('font-size', '3.5');
+      icon.setAttribute('y', '-0.2');
+      icon.textContent = h.is_under_occupation ? '🔴' : '🏰';
+      g.appendChild(icon);
+
+      // House name below
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.classList.add('house-name-label');
+      label.setAttribute('y', '6.5');
+      label.setAttribute('font-size', '2.8');
+      label.setAttribute('fill', '#e8d5a0');
+      label.textContent = truncate(h.name, 14);
+      g.appendChild(label);
+
+      // Click handler
+      g.addEventListener('click', () => openHousePanel(h.id));
+
+      // Hover tooltip
+      g.addEventListener('mouseenter', (e) => showTooltip(e, h));
+      g.addEventListener('mouseleave', hideTooltip);
+      g.addEventListener('touchstart', () => showTooltipMobile(h), {passive: true});
+
+      layer.appendChild(g);
+    });
+  });
+}
+
+// ─────────────────────────────────────────────────
+// TOOLTIP
+// ─────────────────────────────────────────────────
+let tooltipTimeout;
+
+function showTooltip(e, h) {
+  const tt = document.getElementById('mapTooltip');
+  document.getElementById('tooltipName').textContent = h.name;
+  document.getElementById('tooltipBody').innerHTML = `
+    <div style="font-size:11px;color:#718096;margin-bottom:3px">${h.region_label || h.region}</div>
+    <div style="font-size:11px">👥 ${h.member_count} a'zo &nbsp; 💰 ${fmtNum(h.treasury)}</div>
+    <div style="font-size:11px">⚔️ ${fmtNum(h.total_soldiers)} askar &nbsp; 🐉 ${h.total_dragons}</div>
+    ${h.lord_name ? `<div style="font-size:10px;color:#c9a84c;margin-top:3px">Lord: ${h.lord_name}</div>` : ''}
+  `;
+
+  const rect = document.getElementById('westeros-map').getBoundingClientRect();
+  const svgEl = document.getElementById('westeros-map');
+  let left = e.clientX - rect.left + 10;
+  let top = e.clientY - rect.top - 10;
+  if (left + 200 > rect.width) left = e.clientX - rect.left - 180;
+
+  tt.style.left = left + 'px';
+  tt.style.top = top + 'px';
+  tt.classList.add('visible');
+}
+
+function showTooltipMobile(h) {
+  const tt = document.getElementById('mapTooltip');
+  document.getElementById('tooltipName').textContent = h.name;
+  document.getElementById('tooltipBody').innerHTML = `
+    <div style="font-size:11px;color:#718096">${h.region}</div>
+    <div style="font-size:11px">⚔️ ${fmtNum(h.total_soldiers)} &nbsp; 💰 ${fmtNum(h.treasury)}</div>
+  `;
+  tt.style.left = '50%';
+  tt.style.top = '30%';
+  tt.style.transform = 'translateX(-50%)';
+  tt.classList.add('visible');
+  clearTimeout(tooltipTimeout);
+  tooltipTimeout = setTimeout(hideTooltip, 2000);
+}
+
+function hideTooltip() {
+  document.getElementById('mapTooltip').classList.remove('visible');
+}
+
+// ─────────────────────────────────────────────────
+// HOUSE PANEL
+// ─────────────────────────────────────────────────
+async function openHousePanel(houseId) {
+  selectedHouseId = houseId;
+  renderHouseMarkers(); // re-render to show selection
+
+  const panel = document.getElementById('sidePanel');
+  const inner = document.getElementById('panelInner');
+  panel.classList.add('open');
+
+  inner.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100px">
+    <div class="spinner"></div>
+  </div>`;
+
+  try {
+    const h = await fetchAPI(`/api/house/${houseId}`);
+    inner.innerHTML = buildHousePanelHTML(h);
+  } catch(err) {
+    inner.innerHTML = `<div class="error-msg">Ma'lumot yuklab bo'lmadi</div>`;
+  }
+}
+
+function buildHousePanelHTML(h) {
+  const isAtWar = mapData.wars.some(
+    w => w.attacker_house_id === h.id || w.defender_house_id === h.id
+  );
+
+  let html = `
+    <div style="position:relative">
+      <button class="close-panel" onclick="closePanel()">✕</button>
+
+      ${h.is_under_occupation ? `<div class="occupation-badge">🔴 Bosib olingan</div>` : ''}
+
+      <div class="house-title">${h.name}</div>
+      <div class="house-region">
+        <span class="region-dot" style="background:${h.region_color}"></span>
+        ${h.region_label || h.region}
+      </div>
+
+      ${isAtWar ? `<div style="background:rgba(139,0,0,0.15);border:1px solid #8b0000;border-radius:6px;padding:6px 10px;margin-bottom:10px;font-size:11px;color:#ff8a80;display:flex;align-items:center;gap:6px">
+        ⚔️ Bu xonadon hozir urushda!
+      </div>` : ''}
+
+      <div class="divider"></div>
+
+      <div class="section-title">Resurslar</div>
+      <div class="stat-row">
+        <span class="stat-label">💰 Xazina</span>
+        <span class="stat-value gold">${fmtNum(h.treasury)} tanga</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">⚔️ Askarlar</span>
+        <span class="stat-value">${fmtNum(h.total_soldiers)}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">🐉 Ajdarlar</span>
+        <span class="stat-value">${h.total_dragons}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">🦂 Chayonlar</span>
+        <span class="stat-value">${h.total_scorpions}</span>
+      </div>
+      ${h.tax_rate > 0 ? `<div class="stat-row">
+        <span class="stat-label">📊 Soliq</span>
+        <span class="stat-value blood">${(h.tax_rate*100).toFixed(0)}%</span>
+      </div>` : ''}
+
+      <div class="divider"></div>
+
+      <div class="section-title">Rahbarlar</div>
+      ${h.high_lord ? `<div class="stat-row"><span class="stat-label">👑 Hukmdor</span><span class="stat-value" style="font-size:11px">${h.high_lord}</span></div>` : ''}
+      ${h.lord ? `<div class="stat-row"><span class="stat-label">🏰 Lord</span><span class="stat-value" style="font-size:11px">${h.lord}</span></div>` : ''}
+      ${h.knight ? `<div class="stat-row"><span class="stat-label">⚔ Ritsar</span><span class="stat-value" style="font-size:11px">${h.knight}</span></div>` : ''}
+  `;
+
+  if (h.members && h.members.length > 0) {
+    html += `<div class="divider"></div><div class="section-title">A'zolar (${h.members.length})</div>`;
+    h.members.slice(0, 8).forEach(m => {
+      const roleLabel = ROLE_LABELS[m.role] || m.role;
+      const roleCls = ['lord','high_lord','knight'].includes(m.role) ? m.role : '';
+      html += `<div class="member-item">
+        <div class="role-badge ${roleCls}">${roleLabel}</div>
+        <div style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.name}</div>
+      </div>`;
+    });
+    if (h.members.length > 8) {
+      html += `<div style="font-size:11px;color:#718096;padding:4px 0">...va yana ${h.members.length - 8} ta a'zo</div>`;
+    }
+  }
+
+  if (h.recent_wars && h.recent_wars.length > 0) {
+    html += `<div class="divider"></div><div class="section-title">So'nggi urushlar</div>`;
+    h.recent_wars.forEach(w => {
+      const sCls = w.status;
+      const sLabel = WAR_STATUS_LABELS[w.status] || w.status;
+      html += `<div class="war-item">
+        <div class="war-vs">
+          <span style="font-size:10px">${w.attacker}</span>
+          <span style="color:#cc2200;font-size:12px"> ⚔ </span>
+          <span style="font-size:10px">${w.defender}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="war-status-badge ${sCls}">${sLabel}</span>
+          ${w.winner_house_id ? `<span style="font-size:10px;color:#c9a84c">G'olib: ${w.winner_house_id === h.id ? h.name : '...'}</span>` : ''}
+        </div>
+      </div>`;
+    });
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function closePanel() {
+  document.getElementById('sidePanel').classList.remove('open');
+  selectedHouseId = null;
+  renderHouseMarkers();
+}
+
+// ─────────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────────
+function setTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  activeTab = tab;
+
+  if (tab === 'leaderboard') openLeaderboard();
+  else if (tab === 'chronicle') openChronicle();
+  else if (tab === 'wars') openWars();
+  else {
+    closeOverlay('leaderboardOverlay');
+    closeOverlay('chronicleOverlay');
+    closeOverlay('warsOverlay');
+  }
+}
+
+async function openLeaderboard() {
+  const overlay = document.getElementById('leaderboardOverlay');
+  const content = document.getElementById('leaderboardContent');
+  overlay.classList.add('show');
+  content.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner" style="margin:auto"></div></div>`;
+
+  try {
+    const data = await fetchAPI('/api/leaderboard');
+    const medals = ['🥇','🥈','🥉'];
+    content.innerHTML = data.map((h, i) => `
+      <div class="lb-item">
+        <div class="lb-rank ${i<3?'r'+(i+1):''}">${medals[i] || h.rank}</div>
+        <div class="lb-info">
+          <div class="lb-name">${h.name}</div>
+          <div class="lb-region">${h.region}</div>
+        </div>
+        <div class="lb-power">
+          <div class="lb-power-val">${fmtNum(h.power)}</div>
+          <div class="lb-power-label">kuch</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    content.innerHTML = `<div class="error-msg">Yuklab bo'lmadi</div>`;
+  }
+}
+
+async function openChronicle() {
+  const overlay = document.getElementById('chronicleOverlay');
+  const content = document.getElementById('chronicleContent');
+  overlay.classList.add('show');
+  content.innerHTML = `<div style="text-align:center;padding:20px"><div class="spinner" style="margin:auto"></div></div>`;
+
+  try {
+    const data = await fetchAPI('/api/chronicles');
+    if (data.length === 0) {
+      content.innerHTML = `<div style="text-align:center;color:#718096;padding:30px">Hali voqealar yo'q</div>`;
+      return;
+    }
+    content.innerHTML = data.map(c => `
+      <div class="chronicle-item">
+        <div class="chronicle-type">${c.event_type}</div>
+        <div class="chronicle-text">${c.description}</div>
+        <div class="chronicle-date">${formatDate(c.created_at)}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    content.innerHTML = `<div class="error-msg">Yuklab bo'lmadi</div>`;
+  }
+}
+
+function openWars() {
+  const overlay = document.getElementById('warsOverlay');
+  const content = document.getElementById('warsContent');
+  overlay.classList.add('show');
+
+  if (!mapData || mapData.wars.length === 0) {
+    content.innerHTML = `<div style="text-align:center;color:#718096;padding:30px;font-size:14px">⚔️ Hozir faol urushlar yo'q</div>`;
+    return;
+  }
+
+  content.innerHTML = mapData.wars.map(w => {
+    const sLabel = WAR_STATUS_LABELS[w.status] || w.status;
+    return `<div class="war-item" style="padding:12px;margin-bottom:8px">
+      <div class="war-vs" style="font-size:13px;margin-bottom:6px">
+        <strong>${w.attacker_house}</strong>
+        <span style="color:#cc2200;margin:0 8px">⚔</span>
+        <strong>${w.defender_house}</strong>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="war-status-badge ${w.status}">${sLabel}</span>
+        <span style="font-size:10px;color:#718096">${w.war_type === 'civil' ? '🏰 Fuqaro urushi' : '🗡 Tashqi urush'}</span>
+        ${w.declared_at ? `<span style="font-size:10px;color:#718096">${formatDate(w.declared_at)}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('show');
+  // Reset tab to map
+  if (['leaderboardOverlay','chronicleOverlay','warsOverlay'].includes(id)) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-map').classList.add('active');
+    activeTab = 'map';
+  }
+}
+
+// ─────────────────────────────────────────────────
+// REGION CLICK (from SVG zones)
+// ─────────────────────────────────────────────────
+document.querySelectorAll('.region-zone').forEach(zone => {
+  zone.addEventListener('click', (e) => {
+    const regionName = zone.getAttribute('data-region');
+    // Find houses in this region
+    if (!mapData) return;
+    const houses = mapData.houses.filter(h => h.region === regionName);
+    if (houses.length === 1) {
+      openHousePanel(houses[0].id);
+    } else if (houses.length > 1) {
+      // Show tooltip with list
+      const tt = document.getElementById('mapTooltip');
+      document.getElementById('tooltipName').textContent = regionName;
+      document.getElementById('tooltipBody').innerHTML = houses.map(h =>
+        `<div style="font-size:11px;cursor:pointer;padding:2px 0;color:#c9a84c" onclick="openHousePanel(${h.id})">${h.name}</div>`
+      ).join('');
+      tt.style.left = (e.clientX + 10) + 'px';
+      tt.style.top = (e.clientY - 10) + 'px';
+      tt.style.transform = '';
+      tt.classList.add('visible');
+      setTimeout(hideTooltip, 4000);
+    }
+  });
+});
+
+// ─────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────
+function fmtNum(n) {
+  if (n === null || n === undefined) return '0';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+function truncate(str, max) {
+  return str && str.length > max ? str.substring(0, max) + '…' : (str || '');
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('uz-UZ', {month: 'short', day: 'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+// Close panel on outside click
+document.getElementById('mapWrapper').addEventListener('click', (e) => {
+  if (!e.target.closest('.house-marker') && !e.target.closest('.region-zone')) {
+    hideTooltip();
+  }
+});
+
+// ─────────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
