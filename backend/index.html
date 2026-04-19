@@ -160,7 +160,10 @@ header::after {
   fill: var(--parchment);
   text-anchor: middle;
   pointer-events: none;
-  text-shadow: 0 1px 3px black;
+  paint-order: stroke;
+  stroke: #000;
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 /* War arrows */
@@ -1098,8 +1101,8 @@ function renderHouseMarkers() {
 
       // Shield background
       const shield = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-      shield.setAttribute('rx', '2');
-      shield.setAttribute('ry', '2.5');
+      shield.setAttribute('rx', '1.8');
+      shield.setAttribute('ry', '2');
       shield.setAttribute('fill', h.region_color || '#4a5568');
       shield.setAttribute('stroke', h.id === selectedHouseId ? '#ffd700' : '#c9a84c');
       shield.setAttribute('stroke-width', h.id === selectedHouseId ? '0.8' : '0.4');
@@ -1118,8 +1121,8 @@ function renderHouseMarkers() {
       // House name below
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.classList.add('house-name-label');
-      label.setAttribute('y', '6.5');
-      label.setAttribute('font-size', '1.8');
+      label.setAttribute('y', '5.5');
+      label.setAttribute('font-size', '1.6');
       label.setAttribute('fill', '#e8d5a0');
       label.textContent = truncate(h.name, 14);
       g.appendChild(label);
