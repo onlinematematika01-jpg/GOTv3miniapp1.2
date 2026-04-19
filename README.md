@@ -1,0 +1,1 @@
+# GOTv3miniapp1.2
