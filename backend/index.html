@@ -1082,7 +1082,7 @@ function renderHouseMarkers() {
       let x = center.x, y = center.y;
       if (n > 1) {
         const angle = (i / n) * Math.PI * 2 - Math.PI/2;
-        const radius = Math.min(4 + n * 0.5, 7);
+        const radius = Math.min(3 + n * 1.2, 16);
         x = center.x + Math.cos(angle) * radius;
         y = center.y + Math.sin(angle) * radius;
       }
@@ -1098,8 +1098,8 @@ function renderHouseMarkers() {
 
       // Shield background
       const shield = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-      shield.setAttribute('rx', '3.5');
-      shield.setAttribute('ry', '4');
+      shield.setAttribute('rx', '2');
+      shield.setAttribute('ry', '2.5');
       shield.setAttribute('fill', h.region_color || '#4a5568');
       shield.setAttribute('stroke', h.id === selectedHouseId ? '#ffd700' : '#c9a84c');
       shield.setAttribute('stroke-width', h.id === selectedHouseId ? '0.8' : '0.4');
@@ -1110,7 +1110,7 @@ function renderHouseMarkers() {
       const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       icon.setAttribute('text-anchor', 'middle');
       icon.setAttribute('dominant-baseline', 'central');
-      icon.setAttribute('font-size', '3.5');
+      icon.setAttribute('font-size', '2.2');
       icon.setAttribute('y', '-0.2');
       icon.textContent = h.is_under_occupation ? '🔴' : '🏰';
       g.appendChild(icon);
@@ -1119,7 +1119,7 @@ function renderHouseMarkers() {
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.classList.add('house-name-label');
       label.setAttribute('y', '6.5');
-      label.setAttribute('font-size', '2.8');
+      label.setAttribute('font-size', '1.8');
       label.setAttribute('fill', '#e8d5a0');
       label.textContent = truncate(h.name, 14);
       g.appendChild(label);
