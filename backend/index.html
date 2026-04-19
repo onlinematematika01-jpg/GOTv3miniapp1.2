@@ -1118,8 +1118,8 @@ function renderHouseMarkers() {
       // House name below
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.classList.add('house-name-label');
-      label.setAttribute('y', '5.5');
-      label.setAttribute('font-size', '1.6');
+      label.setAttribute('y', '4');
+      label.setAttribute('font-size', '0.8');
       label.setAttribute('fill', '#e8d5a0');
       label.textContent = truncate(h.name, 14);
       g.appendChild(label);
