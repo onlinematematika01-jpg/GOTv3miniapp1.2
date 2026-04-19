@@ -106,6 +106,7 @@ header::after {
   height: 100%;
   position: relative;
   touch-action: none;
+  overflow: hidden;
 }
 
 #westeros-map {
@@ -160,10 +161,6 @@ header::after {
   fill: var(--parchment);
   text-anchor: middle;
   pointer-events: none;
-  paint-order: stroke;
-  stroke: #000;
-  stroke-width: 3px;
-  stroke-linejoin: round;
 }
 
 /* War arrows */
@@ -605,7 +602,7 @@ header::after {
   <!-- Map -->
   <div class="map-container">
     <div class="map-wrapper" id="mapWrapper">
-      <svg id="westeros-map" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <svg id="westeros-map" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="transform-origin: center; cursor: grab;">
         <defs>
           <!-- Sea texture -->
           <pattern id="seaPattern" patternUnits="userSpaceOnUse" width="8" height="8">
@@ -1469,6 +1466,107 @@ document.getElementById('mapWrapper').addEventListener('click', (e) => {
 // START
 // ─────────────────────────────────────────────────
 init();
+
+// ─────────────────────────────────────────────────
+// ZOOM & PAN
+// ─────────────────────────────────────────────────
+(function() {
+  const svg = document.getElementById('westeros-map');
+  const wrapper = document.getElementById('mapWrapper');
+  let scale = 1, tx = 0, ty = 0;
+  let isPanning = false, startX = 0, startY = 0, lastTx = 0, lastTy = 0;
+  let lastDist = 0;
+
+  function applyTransform() {
+    scale = Math.max(1, Math.min(8, scale));
+    if (scale === 1) { tx = 0; ty = 0; }
+    svg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    svg.style.cursor = scale > 1 ? 'grab' : 'default';
+  }
+
+  // Mouse wheel zoom
+  wrapper.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = wrapper.getBoundingClientRect();
+    const mx = e.clientX - rect.left - rect.width/2;
+    const my = e.clientY - rect.top - rect.height/2;
+    const delta = e.deltaY > 0 ? 0.85 : 1.18;
+    const newScale = Math.max(1, Math.min(8, scale * delta));
+    tx = mx - (mx - tx) * (newScale / scale);
+    ty = my - (my - ty) * (newScale / scale);
+    scale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  // Mouse pan
+  wrapper.addEventListener('mousedown', (e) => {
+    if (scale <= 1) return;
+    isPanning = true; startX = e.clientX; startY = e.clientY;
+    lastTx = tx; lastTy = ty;
+    svg.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+    tx = lastTx + (e.clientX - startX);
+    ty = lastTy + (e.clientY - startY);
+    applyTransform();
+  });
+  window.addEventListener('mouseup', () => {
+    isPanning = false;
+    svg.style.cursor = scale > 1 ? 'grab' : 'default';
+  });
+
+  // Touch pinch zoom & pan
+  wrapper.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastDist = Math.sqrt(dx*dx + dy*dy);
+    } else if (e.touches.length === 1 && scale > 1) {
+      isPanning = true;
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+      lastTx = tx; lastTy = ty;
+    }
+  }, { passive: true });
+
+  wrapper.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const rect = wrapper.getBoundingClientRect();
+      const cx = (e.touches[0].clientX + e.touches[1].clientX)/2 - rect.left - rect.width/2;
+      const cy = (e.touches[0].clientY + e.touches[1].clientY)/2 - rect.top - rect.height/2;
+      const newScale = Math.max(1, Math.min(8, scale * (dist / lastDist)));
+      tx = cx - (cx - tx) * (newScale / scale);
+      ty = cy - (cy - ty) * (newScale / scale);
+      scale = newScale;
+      lastDist = dist;
+      applyTransform();
+    } else if (e.touches.length === 1 && isPanning) {
+      tx = lastTx + (e.touches[0].clientX - startX);
+      ty = lastTy + (e.touches[0].clientY - startY);
+      applyTransform();
+    }
+  }, { passive: false });
+
+  wrapper.addEventListener('touchend', () => { isPanning = false; });
+
+  // Double tap to reset
+  let lastTap = 0;
+  wrapper.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) { scale = 1; tx = 0; ty = 0; applyTransform(); }
+    lastTap = now;
+  });
+
+  // Double click to reset
+  wrapper.addEventListener('dblclick', () => {
+    scale = 1; tx = 0; ty = 0; applyTransform();
+  });
+})();
+
 </script>
 </body>
 </html>
