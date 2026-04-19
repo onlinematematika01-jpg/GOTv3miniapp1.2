@@ -5,9 +5,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# GOTv3 asosiy proyektdan models.py nusxa olish
 COPY models.py .
 COPY main.py .
+COPY index.html .
 
 ENV PORT=8000
 
