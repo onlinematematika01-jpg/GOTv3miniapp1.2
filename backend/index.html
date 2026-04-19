@@ -844,15 +844,15 @@ const REGION_ZONE_MAP = {
 
 // Region approximate coordinates on the SVG (percentage based)
 const REGION_POSITIONS = {
-  "Shimol":              {x: 42, y: 15},
-  "Vodiy":               {x: 70, y: 35},
-  "Daryo yerlari":       {x: 47, y: 40},
-  "Temir orollar":       {x: 22, y: 37},
-  "G'arbiy yerlar":      {x: 29, y: 50},
-  "Qirollik bandargohi": {x: 65, y: 51},
-  "Tyrellar vodiysi":    {x: 42, y: 67},
-  "Bo'ronli yerlar":     {x: 70, y: 65},
-  "Dorn":                {x: 50, y: 86},
+  "Shimol":              {x: 38, y: 15, minX: 12, maxX: 64, minY: 3,  maxY: 27},
+  "Vodiy":               {x: 70, y: 36, minX: 59, maxX: 81, minY: 25, maxY: 47},
+  "Daryo yerlari":       {x: 45, y: 40, minX: 33, maxX: 57, minY: 29, maxY: 49},
+  "Temir orollar":       {x: 20, y: 36, minX: 13, maxX: 29, minY: 31, maxY: 42},
+  "G'arbiy yerlar":      {x: 24, y: 44, minX: 15, maxX: 36, minY: 29, maxY: 61},
+  "Qirollik bandargohi": {x: 65, y: 52, minX: 53, maxX: 81, minY: 43, maxY: 62},
+  "Tyrellar vodiysi":    {x: 46, y: 70, minX: 21, maxX: 73, minY: 59, maxY: 81},
+  "Bo'ronli yerlar":     {x: 76, y: 70, minX: 63, maxX: 85, minY: 63, maxY: 81},
+  "Dorn":                {x: 50, y: 87, minX: 25, maxX: 75, minY: 77, maxY: 97},
 };
 
 const ROLE_LABELS = {
@@ -1078,17 +1078,28 @@ function renderHouseMarkers() {
 
     houses.forEach((h, i) => {
       // Spread markers in the region
+      const regionInfo = REGION_POSITIONS[region] || {x: center.x, y: center.y, minX: 4, maxX: 96, minY: 4, maxY: 96};
       let x = center.x, y = center.y;
       if (n > 1) {
-        const angle = (i / n) * Math.PI * 2 - Math.PI/2;
-        const radius = Math.min(4 + n * 1.8, 22);
-        x = center.x + Math.cos(angle) * radius;
-        y = center.y + Math.sin(angle) * radius;
+        // Grid layout inside region bounds
+        const cols = Math.ceil(Math.sqrt(n));
+        const rows = Math.ceil(n / cols);
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const padX = (regionInfo.maxX - regionInfo.minX) * 0.12;
+        const padY = (regionInfo.maxY - regionInfo.minY) * 0.15;
+        const cellW = (regionInfo.maxX - regionInfo.minX - padX*2) / Math.max(cols - 1, 1);
+        const cellH = (regionInfo.maxY - regionInfo.minY - padY*2) / Math.max(rows - 1, 1);
+        x = regionInfo.minX + padX + col * (cols > 1 ? cellW : 0);
+        y = regionInfo.minY + padY + row * (rows > 1 ? cellH : 0);
+        if (cols === 1) x = center.x;
+        if (rows === 1) y = center.y;
       }
 
-      // Clamp to map bounds
-      x = Math.max(4, Math.min(96, x));
-      y = Math.max(4, Math.min(96, y));
+      // Clamp strictly inside region bounds
+      const ri = REGION_POSITIONS[region] || {minX: 4, maxX: 96, minY: 4, maxY: 96};
+      x = Math.max(ri.minX + 2, Math.min(ri.maxX - 2, x));
+      y = Math.max(ri.minY + 2, Math.min(ri.maxY - 2, y));
 
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       g.classList.add('house-marker');
